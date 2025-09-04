@@ -4,19 +4,20 @@ const courseRouter = express.Router();
 
 
 const getCourseDetailsHandler = function (req, res) {
-    res.send("getcourseDetails handler");
+    res.json({
+        message: "getcourseDetails handler"
+    });
 }
 
 const getCoursesHandler = function (req, res) {
-    res.send("get courses handler");
+    res.json({
+        message: "get courses handler"
+    });
 }
 
-const uploadCourseHandler = function (req, res) {
-    res.send("upload course handler");
-}
+
 
 courseRouter.get("/", getCoursesHandler);
-courseRouter.post("/upload", uploadCourseHandler);
 courseRouter.get('/:id', getCourseDetailsHandler);
 
 
