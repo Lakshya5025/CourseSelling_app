@@ -1,9 +1,11 @@
 const express = require('express');
+const jwt = require("jsonwebtoken");
 const adminRouter = express.Router();
 const { signinHandler, signupHandler } = require("../controllers/signController");
+const { userModel } = require('../db');
 
 const setUserType = function (req, res, next) {
-    res.userType = "admin"
+    req.userType = "admin"
     next();
 }
 const uploadCourseHandler = function (req, res) {
@@ -17,10 +19,39 @@ const updateCourseHandler = function (req, res) {
         message: "upload course handler"
     });
 }
-
-adminRouter.post("/signin", signinHandler);
-adminRouter.post('/signup', signupHandler);
-adminRouter.post("/courses", uploadCourseHandler);
-adminRouter.put("/courses/", updateCourseHandler);
+const auth = async function (req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.json({
+            message: "please login"
+        })
+    }
+    try {
+        const user = await jwt.verify(token, process.env.JWT_SECRET);
+        console.log(user);
+        const { userId } = user;
+        const findInDB = await userModel.findOne({
+            _id: userId
+        })
+        if (findInDB && findInDB.type == 'admin') {
+            req.user = { ...user, type: "admin" };
+            next();
+        }
+        else {
+            res.json({
+                message: "unautharize"
+            })
+        }
+    } catch (err) {
+        return res.json({
+            message: err.message
+        })
+    }
+    next();
+}
+adminRouter.post("/signin", setUserType, signinHandler);
+adminRouter.post('/signup', auth, setUserType, signupHandler);
+adminRouter.post("/courses", auth, uploadCourseHandler);
+adminRouter.put("/courses/", auth, updateCourseHandler);
 
 module.exports = { adminRouter: adminRouter };
