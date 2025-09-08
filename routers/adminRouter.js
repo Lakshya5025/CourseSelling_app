@@ -1,18 +1,10 @@
 const express = require('express');
-
 const adminRouter = express.Router();
+const { signinHandler, signupHandler } = require("../controllers/signController");
 
-
-const signinHandler = function (req, res) {
-    res.json({
-        message: "Admin signup handler"
-    })
-}
-
-const signupHandler = function (req, res) {
-    res.json({
-        message: "admin singup handler"
-    });
+const setUserType = function (req, res, next) {
+    res.userType = "admin"
+    next();
 }
 const uploadCourseHandler = function (req, res) {
     res.json({
