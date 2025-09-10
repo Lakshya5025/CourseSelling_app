@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const adminRouter = express.Router();
 const { signinHandler, signupHandler } = require("../controllers/signController");
 const { userModel, courseModel } = require('../db');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.ObjectId;
 const setUserType = function (req, res, next) {
     req.userType = "admin"
     next();
@@ -17,7 +19,6 @@ const auth = async function (req, res, next) {
     }
     try {
         const user = await jwt.verify(token, process.env.JWT_SECRET);
-        // console.log(user);
         const { userId } = user;
         const findInDB = await userModel.findOne({
             _id: userId
@@ -47,13 +48,10 @@ const uploadCourseHandler = async function (req, res) {
             message: "provide (title, imageUrl, price, description)"
         })
     }
-    // console.log(req.user.userId);
     let createrId = req.user.userId;
-    // console.log("hi");
     const newCourse = new courseModel({
         title, imageUrl, price, description, createrId
     });
-    // console.log("after course model");
     try {
         await newCourse.save();
         res.json({
@@ -67,18 +65,47 @@ const uploadCourseHandler = async function (req, res) {
     }
 }
 
-const updateCourseHandler = function (req, res) {
-    res.json({
-        message: "upload course handler"
-    });
+const updateCourseHandler = async function (req, res) {
+    const courseId = req.params.id;
+    const { title, imageUrl, price, description } = req.body;
+    try {
+        const updatedCourse = await courseModel.findOneAndUpdate(
+            {
+                _id: courseId,
+                createrId: req.user.userId
+            },
+            {
+                $set: {
+                    title,
+                    imageUrl,
+                    description,
+                    price
+                }
+            },
+            {
+                new: true
+            }
+        );
+        if (!updatedCourse) {
+            return res.json({
+                message: "no course found"
+            })
+        }
+        res.json({
+            message: "upload course handler"
+        });
+    }
+    catch (err) {
+        res.json({
+            message: "Provide valid course id"
+        })
+    }
+
 }
-
-
-
 
 adminRouter.post("/signin", setUserType, signinHandler);
 adminRouter.post('/signup', setUserType, signupHandler);
 adminRouter.post("/courses", auth, uploadCourseHandler);
-adminRouter.put("/courses/", auth, updateCourseHandler);
+adminRouter.put("/courses/update/:id", auth, updateCourseHandler);
 
 module.exports = { adminRouter: adminRouter };
