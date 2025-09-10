@@ -35,8 +35,8 @@ const signinHandler = async function (req, res) {
                         httpOnly: true,
                         secure: true,
                         path: '/'
-                    });
-                    res.json({
+                    })
+                    res.status(200).json({
                         message: "Signed in successfully",
                         user: {
                             firstName: findUser.firstName,
@@ -45,18 +45,18 @@ const signinHandler = async function (req, res) {
                     });
                 }
                 else {
-                    res.json({
+                    res.status(401).json({
                         message: "Incorrect email/password"
                     })
                 }
             }
             else {
-                res.json({
+                res.status(401).json({
                     message: "Incorrect email/password"
                 })
             }
         } catch (er) {
-            res.json({
+            res.status(500).json({
                 message: "Database error"
             })
         }
@@ -76,18 +76,18 @@ const signupHandler = async function (req, res) {
         })
         try {
             await newUser.save();
-            res.json({
+            res.status(201).json({
                 message: "added successfully"
             })
         } catch (err) {
             console.log("Error saving new user ", err);
-            res.json({
+            res.status(400).json({
                 message: "failed in adding user"
             })
         }
     }
     else {
-        res.json({
+        res.status(400).json({
             message: "Input validation failed"
         })
     }

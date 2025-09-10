@@ -13,7 +13,7 @@ const setUserType = function (req, res, next) {
 const auth = async function (req, res, next) {
     const token = req.cookies.token;
     if (!token) {
-        return res.json({
+        return res.status(401).json({
             message: "please login"
         })
     }
@@ -28,12 +28,12 @@ const auth = async function (req, res, next) {
             next();
         }
         else {
-            res.json({
+            res.status(401).json({
                 message: "unautharize"
             })
         }
     } catch (err) {
-        return res.json({
+        return res.status(500).json({
             message: err.message
         })
     }
@@ -44,7 +44,7 @@ const auth = async function (req, res, next) {
 const uploadCourseHandler = async function (req, res) {
     const { title, imageUrl, price, description } = req.body;
     if (!title || !imageUrl || !price || !description) {
-        return res.json({
+        return res.status(400).json({
             message: "provide (title, imageUrl, price, description)"
         })
     }
@@ -54,12 +54,12 @@ const uploadCourseHandler = async function (req, res) {
     });
     try {
         await newCourse.save();
-        res.json({
+        res.status(201).json({
             message: "New course added"
         })
     }
     catch (err) {
-        res.json({
+        res.status(500).json({
             message: "Database error"
         })
     }
@@ -87,16 +87,16 @@ const updateCourseHandler = async function (req, res) {
             }
         );
         if (!updatedCourse) {
-            return res.json({
+            return res.status(404).json({
                 message: "no course found"
             })
         }
-        res.json({
-            message: "upload course handler"
+        res.status(200).json({
+            message: "successfully updated"
         });
     }
     catch (err) {
-        res.json({
+        res.status(400).json({
             message: "Provide valid course id"
         })
     }
